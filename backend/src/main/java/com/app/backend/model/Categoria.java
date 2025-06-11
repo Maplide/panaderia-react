@@ -1,15 +1,55 @@
 package com.app.backend.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "categorias")
+@Getter
+@Setter
 public class Categoria {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String nombre;
 
-    // Getters y Setters
+    @Column(columnDefinition = "TEXT")
+    private String descripcion;
+
+    @Enumerated(EnumType.STRING)
+    private TipoCategoria tipo;
+
+    @Column(name = "fecha_creacion", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private LocalDateTime fechaCreacion;
+
+    @Column(name = "imagen_url")
+    private String imagenUrl;
+
+    private int popularidad;
+
+    private boolean destacado;
+
+    @Enumerated(EnumType.STRING)
+    private Estado estado;
+
+    @Column(name = "codigo_categoria")
+    private String codigoCategoria;
+
+    private Integer orden;
+
+    @Column(columnDefinition = "TEXT")
+    private String observaciones;
+
+    public enum TipoCategoria {
+        pan, pastel, galleta, otros
+    }
+
+    public enum Estado {
+        activo, inactivo
+    }
 }

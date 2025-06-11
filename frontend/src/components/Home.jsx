@@ -10,46 +10,92 @@ import {
   FaSignInAlt, FaUserPlus, FaShoppingCart, FaBreadSlice, FaHome, FaClock
 } from 'react-icons/fa';
 
-const Home = () => {
-  const [showLogin, setShowLogin] = useState(false);
-  const [showRegister, setShowRegister] = useState(false);
+import LoginForm from './LoginForm';
+import RegisterForm from './RegisterForm';
+import Cart from './Cart';
+import CheckoutForm from './CheckoutForm';
+import ProductCard from './ProductCard';
+import HistorialCompras from './HistorialCompras';
+import { useUser } from '../context/UserContext';
 
-  const [registerData, setRegisterData] = useState({
-    nombre: '',
-    email: '',
-    password: ''
-  });
+import { useCart } from '../context/CartContext';
+
+const Home = () => {
+
+  const { user, logout } = useUser();
+  const [modalOpen, setModalOpen] = useState(false);
+  const { clearCart } = useCart();
+  const [modalType, setModalType] = useState(null); // puede ser 'login', 'register', 'cart', 'pedido'
+  const [mostrarHistorial, setMostrarHistorial] = useState(false);
+  const { cart } = useCart();
+  const [redirectAfterLogin, setRedirectAfterLogin] = useState(null);
+  const [flujoPendiente, setFlujoPendiente] = useState(null);
 
   // 🆕 Inicializar animaciones AOS al cargar el componente
   useEffect(() => {
     AOS.init({ duration: 1000, once: true });
   }, []);
 
-  const handleRegisterSubmit = async (e) => {
-    e.preventDefault();
-
-    try {
-      const response = await fetch('http://localhost:8080/api/usuarios/registro', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(registerData)
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        alert('Usuario registrado con éxito: ' + data.nombre);
-        setShowRegister(false);
-        setRegisterData({ nombre: '', email: '', password: '' });
-      } else {
-        alert('Error al registrar usuario');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      alert('Error de red o servidor');
+  const renderModalContent = () => {
+    switch (modalType) {
+      case 'login':
+        return (
+          <LoginForm
+            onSuccess={() => {
+              if (flujoPendiente === 'checkout') {
+                setModalType('checkout');
+              } else if (flujoPendiente === 'cart') {
+                setModalType('cart');
+              } else {
+                setModalOpen(false);
+              }
+              setFlujoPendiente(null); // Limpia después del redireccionamiento
+            }}
+            onRegisterSwitch={() => setModalType('register')}
+          />
+        );
+      case 'register':
+        return (
+          <RegisterForm
+            onSuccess={() => setModalOpen(false)}
+            onLoginSwitch={() => setModalType('login')}
+          />
+        );
+      case 'cart':
+        return (
+          <Cart
+            onClose={() => setModalOpen(false)}
+            onNext={() => setModalType('checkout')}
+            openLoginModal={(flujo = 'cart') => {
+              setFlujoPendiente(flujo);  // 👈 ahora acepta "cart" o "checkout"
+              setModalType('login');
+              setModalOpen(true);
+            }}
+          />
+        );
+      case 'checkout':
+        return (
+          <CheckoutForm
+            onBack={() => setModalType('cart')}
+            onNext={() => {
+              alert('¡Pedido confirmado! Gracias por tu compra 🥐');
+              clearCart(); // Vacía el carrito
+              setModalOpen(false); // Cierra el modal
+            }}
+          />
+        );
+      default:
+        return null;
     }
   };
+
+  const productos = [
+    { id: 1, nombre: "Pan Francés", precio: 2.00, imagen_url: "/imagenes/pan-frances.png" },
+    { id: 2, nombre: "Empanadas de Pollo", precio: 5.00, imagen_url: "/imagenes/empanadas-de-pollo.png" },
+    { id: 3, nombre: "Pastel de Chocolate", precio: 20.00, imagen_url: "/imagenes/pastel-de-chocolate.png" },
+    { id: 4, nombre: "Pay de manzana", precio: 10.00, imagen_url: "/imagenes/pay-de-manzana.png" },
+    { id: 5, nombre: "Bizcocho de vainilla", precio: 12.00, imagen_url: "/imagenes/bizcochos-de-vainilla.png" }
+  ];
 
   return (
     <>
@@ -61,13 +107,32 @@ const Home = () => {
           <a href="#"><FaBreadSlice /> Productos</a>
           <a href="#pedidos"><FaShoppingCart /> Pedidos</a>
         </nav>
+
         <div className="user-auth">
-          <button className="auth-btn" onClick={() => setShowLogin(true)}>
-            <FaSignInAlt /> Iniciar Sesión
-          </button>
-          <button className="auth-btn" onClick={() => setShowRegister(true)}>
-            <FaUserPlus /> Registrarse
-          </button>
+          {!user ? (
+            <>
+              <button className="auth-btn" onClick={() => {
+                setModalType('login');
+                setModalOpen(true);
+              }}>
+                <FaSignInAlt /> Iniciar Sesión
+              </button>
+              <button className="auth-btn" onClick={() => {
+                setModalType('register');
+                setModalOpen(true);
+              }}>
+                <FaUserPlus /> Registrarse
+              </button>
+            </>
+          ) : (
+            <div className="user-info-box">
+              <span className="user-name">
+                <FaUserPlus style={{ marginRight: '4px' }} />
+                {user.nombre}
+              </span>
+              <button className="logout-btn" onClick={logout} title="Cerrar sesión">🔒</button>
+            </div>
+          )}
         </div>
       </header>
 
@@ -87,93 +152,26 @@ const Home = () => {
                 Somos una panadería artesanal dedicada a ofrecer panes y pasteles
                 frescos todos los días. Usamos ingredientes de calidad y mucho amor.
             </p>
-            <a href="productos.html" className="btn-primario">
-                Ver Productos
-            </a>
+            <button
+              className="btn-primario"
+              onClick={() => {
+                const productosSection = document.getElementById('productos-destacados');
+                productosSection?.scrollIntoView({ behavior: 'smooth' });
+              }}
+            >
+              Ver Productos
+            </button>
             </div>
         </div>
       </section>
-
-      {/* Modal Login */}
-      {showLogin && (
-        <div className="auth-modal" style={{ display: 'flex' }}>
-            <div className="modal-content modal-anim">
-            <span className="close-modal" onClick={() => setShowLogin(false)}>&times;</span>
-            <h2 className="modal-title">Iniciar Sesión</h2>
-                <form>
-                    <div className="form-group">
-                    <label>Correo Electrónico</label>
-                    <div className="input-icon">
-                        <input type="email" required />
-                        <i className="fas fa-envelope"></i>
-                    </div>
-                    </div>
-                    <div className="form-group">
-                    <label>Contraseña</label>
-                    <div className="input-icon">
-                        <input type="password" required />
-                        <i className="fas fa-lock"></i>
-                    </div>
-                    </div>
-                    <button type="submit" className="btn-primario modal-btn">Ingresar</button>
-                </form>
-            </div>
-        </div>
-      )}
-
-      {/* Modal Registro */}
-      {showRegister && (
-        <div className="auth-modal" style={{ display: 'flex' }}>
-            <div className="modal-content modal-anim">
-            <span className="close-modal" onClick={() => setShowRegister(false)}>&times;</span>
-            <h2 className="modal-title">Registrarse</h2>
-                <form onSubmit={handleRegisterSubmit}>
-                    <div className="form-group">
-                    <label>Nombre Completo</label>
-                    <div className="input-icon">
-                        <input type="text" value={registerData.nombre} onChange={(e) => setRegisterData({ ...registerData, nombre: e.target.value })} required />
-                        <i className="fas fa-user"></i>
-                    </div>
-                    </div>
-                    <div className="form-group">
-                    <label>Correo Electrónico</label>
-                    <div className="input-icon">
-                        <input type="email" value={registerData.email} onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })} required />
-                        <i className="fas fa-envelope"></i>
-                    </div>
-                    </div>
-                    <div className="form-group">
-                    <label>Contraseña</label>
-                    <div className="input-icon">
-                        <input type="password" value={registerData.password} onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })} required />
-                        <i className="fas fa-lock"></i>
-                    </div>
-                    </div>
-                    <button type="submit" className="btn-primario modal-btn">Registrarse</button>
-                </form>
-            </div>
-        </div>
-      )}
-
+      
       {/* Productos destacados */}
-      <section className="destacados" data-aos="fade-up">
+      <section id="productos-destacados" className="destacados" data-aos="fade-up">
         <div className="container">
           <h2 className="titulo-productos">Nuestros Productos Destacados</h2>
           <div className="destacados-grid">
-            {/* 🆕 Podrías animar individualmente cada item si deseas */}
-            {[
-              { nombre: "Pan Francés", precio: "S/2.00", imagen: "pan-frances.png", descripcion: "Recién horneado todos los días" },
-              { nombre: "Empanadas de Pollo", precio: "S/5.00", imagen: "empanadas-de-pollo.png", descripcion: "Rellenas con ingredientes frescos" },
-              { nombre: "Pastel de Chocolate", precio: "S/20.00", imagen: "pastel-de-chocolate.png", descripcion: "Puro sabor en cada rebanada" },
-              { nombre: "Pay de manzana", precio: "S/10.00", imagen: "pay-de-manzana.png", descripcion: "Dulce sabor a manzana" },
-              { nombre: "Bizcocho de vainilla", precio: "S/12.00", imagen: "bizcochos-de-vainilla.png", descripcion: "Un sabor que gusta" }
-            ].map((item, i) => (
-              <div className="destacado-item" key={i} data-aos="zoom-in">
-                <img src={`imagenes/${item.imagen}`} alt={item.nombre} className="zoom-img" />
-                <h3>{item.nombre}</h3>
-                <p>{item.descripcion}</p>
-                <span className="precio">{item.precio}</span>
-              </div>
+            {productos.map((producto) => (
+              <ProductCard key={producto.id} producto={producto} />
             ))}
           </div>
         </div>
@@ -230,36 +228,28 @@ const Home = () => {
         <div className="container">
             <h2 className="titulo-pedidos">🛒 Haz tu Pedido</h2>
             <div className="pedidos-content">
-            <form className="pedidos-form">
-                <div className="form-group">
-                <label><i className="fas fa-user"></i> Nombre completo</label>
-                <input type="text" required />
-                </div>
-                <div className="form-group">
-                <label><i className="fas fa-phone-alt"></i> Teléfono</label>
-                <input type="tel" required />
-                </div>
-                <div className="form-group">
-                <label><i className="fas fa-bread-slice"></i> ¿Qué deseas ordenar?</label>
-                <select required>
-                    <option value="">Selecciona un producto</option>
-                    <option>Pan Francés</option>
-                    <option>Empanada de Pollo</option>
-                    <option>Pastel de Chocolate</option>
-                    <option>Bizcocho de Vainilla</option>
-                    <option>Pay de Manzana</option>
-                </select>
-                </div>
-                <div className="form-group">
-                <label><i className="fas fa-sort-numeric-up-alt"></i> Cantidad</label>
-                <input type="number" min="1" required />
-                </div>
-                <div className="form-group">
-                <label><i className="fas fa-calendar-alt"></i> Fecha de recolección</label>
-                <input type="date" required />
-                </div>
-                <button type="submit" className="btn-primario modal-btn">Enviar Pedido</button>
-            </form>
+            <div className="pedidos-form">
+              <p style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>
+                Puedes hacer tu pedido completo desde nuestro catálogo online.
+              </p>
+              <div className="historial-container">
+                <button
+                  className="btn-historial"
+                  onClick={() => setMostrarHistorial(true)}
+                >
+                  📜 Ver Historial de Compras
+                </button>
+              </div>
+              <button
+                className="btn-primario modal-btn"
+                onClick={() => {
+                  setModalType('cart');
+                  setModalOpen(true);
+                }}
+              >
+                🛒 Ir al Pedido Interactivo
+              </button>
+            </div>
 
             <div className="pedidos-info">
                 <h3><i className="fas fa-clock"></i> Horario de atención</h3>
@@ -321,6 +311,35 @@ const Home = () => {
           </div>
         </div>
       </footer>
+
+      {modalOpen && (
+        <div className="auth-modal" style={{ display: 'flex' }}>
+          <div className="modal-content">
+            <span className="close-modal" onClick={() => setModalOpen(false)}>&times;</span>
+            {renderModalContent()}
+          </div>
+        </div>
+      )}
+
+      {mostrarHistorial && (
+        <div className="auth-modal" style={{ display: 'flex' }}>
+          <div className="modal-content">
+            <span className="close-modal" onClick={() => setMostrarHistorial(false)}>&times;</span>
+            <HistorialCompras />
+          </div>
+        </div>
+      )}
+
+      {/* Botón flotante del carrito */}
+      <div className="floating-cart" onClick={() => {
+        setModalType('cart');
+        setModalOpen(true);
+      }}>
+        <FaShoppingCart className="cart-icon" />
+        {cart.length > 0 && (
+          <span className="cart-badge">{cart.length}</span>
+        )}
+      </div>
     </>
   );
 };

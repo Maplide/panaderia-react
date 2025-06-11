@@ -28,4 +28,9 @@ public class ProductoController {
     public Producto obtenerProducto(@PathVariable Long id) {
         return productoRepository.findById(id).orElse(null);
     }
+
+    @GetMapping("/categoria/{categoriaId}")
+    public List<Producto> productosPorCategoria(@PathVariable Long categoriaId) {
+        return productoRepository.findByCategoria_Id(categoriaId);
+    }
 }

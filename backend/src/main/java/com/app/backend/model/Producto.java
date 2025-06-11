@@ -1,6 +1,7 @@
 package com.app.backend.model;
 
 import jakarta.persistence.*;
+import com.app.backend.model.Categoria;
 
 @Entity
 @Table(name = "productos")
@@ -31,8 +32,9 @@ public class Producto {
             columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private String fechaCreacion;
 
-    @Column(name = "categoria_id")
-    private Long categoriaId;
+    @ManyToOne
+    @JoinColumn(name = "categoria_id")
+    private Categoria categoria;
 
     // Getters y Setters
 
@@ -71,7 +73,12 @@ public void setCodigoProducto(String codigoProducto) { this.codigoProducto = cod
 public String getFechaCreacion() { return fechaCreacion; }
 public void setFechaCreacion(String fechaCreacion) { this.fechaCreacion = fechaCreacion; }
 
-public Long getCategoriaId() { return categoriaId; }
-public void setCategoriaId(Long categoriaId) { this.categoriaId = categoriaId; }
+public Categoria getCategoria() {
+    return categoria;
+}
+
+public void setCategoria(Categoria categoria) {
+    this.categoria = categoria;
+}
 
 }
