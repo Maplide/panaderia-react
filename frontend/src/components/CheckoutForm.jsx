@@ -7,14 +7,16 @@ const CheckoutForm = ({ onNext, onBack }) => {
   const [entrega, setEntrega] = useState('delivery');
   const [direccion, setDireccion] = useState('');
   const [pago, setPago] = useState('efectivo');
+  const [mostrarModal, setMostrarModal] = useState(false);
   const { cart, clearCart } = useCart();
 
   useEffect(() => {
-    // Cargar la dirección desde el perfil del cliente
     if (user?.direccion) {
       setDireccion(user.direccion);
     }
   }, [user]);
+
+  const total = cart.reduce((sum, item) => sum + item.precio * item.cantidad, 0);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,7 +31,7 @@ const CheckoutForm = ({ onNext, onBack }) => {
       direccion,
       formaEntrega: entrega,
       tipoPago: pago,
-      total: cart.reduce((sum, item) => sum + item.precio * item.cantidad, 0),
+      total,
       detalles: cart.map(item => ({
         productoId: item.id,
         cantidad: item.cantidad,
@@ -47,9 +49,15 @@ const CheckoutForm = ({ onNext, onBack }) => {
       });
 
       if (res.ok) {
-        alert('¡Pedido confirmado! Gracias por tu compra 🥐');
-        clearCart();
-        onNext(); // continuar (puede ser cerrar modal o mostrar resumen)
+        clearCart(); // limpia el carrito
+
+        onNext({
+          nombre: user.nombre || user.email,
+          direccion,
+          entrega,
+          pago,
+          total: ventaData.total
+        });
       } else {
         const err = await res.text();
         console.error('Error en el backend:', err);

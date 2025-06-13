@@ -13,13 +13,15 @@ const Cart = ({ onNext, onClose, openLoginModal }) => {
 
   const handleConfirm = () => {
     if (!user) {
-        if (openLoginModal) {
-        openLoginModal('checkout'); // 👈 le decimos que el flujo pendiente es checkout
-        } else {
-        alert('Debes iniciar sesión para continuar.');
-        }
+      localStorage.setItem("redirigir_despues", "checkout");
+
+      if (openLoginModal) {
+        openLoginModal('checkout');
+      } else {
+        navigate("/registro");
+      }
     } else {
-        onNext(); // sigue al formulario de entrega
+      onNext(); // ✅ Avanzar al formulario de entrega
     }
   };
 

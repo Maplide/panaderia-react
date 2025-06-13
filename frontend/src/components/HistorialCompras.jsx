@@ -24,29 +24,36 @@ const HistorialCompras = () => {
   };
 
   return (
-    <div className="historial-compras">
-      <h3>🧾 Historial de Compras</h3>
+    <div className="historial-container">
+      <h3 style={{ textAlign: 'center', marginBottom: '1rem' }}>🧾 Historial de Compras</h3>
 
       {ventasPagina.length === 0 ? (
-        <p>No tienes pedidos registrados.</p>
+        <p style={{ textAlign: 'center' }}>No tienes pedidos registrados.</p>
       ) : (
         <>
-          <ul>
-            {ventasPagina.map((venta) => (
-              <li key={venta.id} style={{ marginBottom: '1rem', borderBottom: '1px solid #ccc', paddingBottom: '0.5rem' }}>
-                <p><strong>ID:</strong> {venta.id}</p>
-                <p><strong>Fecha:</strong> {new Date(venta.fecha).toLocaleString()}</p>
-                <p><strong>Total:</strong> S/ {venta.total?.toFixed(2)}</p>
-                <p><strong>Forma de Entrega:</strong> {venta.formaEntrega}</p>
-                <p><strong>Pago:</strong> {venta.tipoPago}</p>
-              </li>
-            ))}
-          </ul>
+          {ventasPagina.map((venta) => (
+            <div className="historial-item" key={venta.id}>
+              <h4>Pedido #{venta.id}</h4>
+              <div className="historial-fecha">📅 {new Date(venta.fecha).toLocaleString()}</div>
+              <ul className="historial-detalle">
+                {venta.detalles?.map((detalle, index) => (
+                  <li key={index}>
+                    {detalle.nombreProducto} × {detalle.cantidad} — S/ {(detalle.precioUnitario * detalle.cantidad).toFixed(2)}
+                  </li>
+                ))}
+              </ul>
+              <div className="historial-total">💰 Total: S/ {venta.total?.toFixed(2)}</div>
+              <p style={{ marginTop: '5px' }}>
+                🚚 Entrega: <strong>{venta.formaEntrega}</strong><br />
+                💳 Pago: <strong>{venta.tipoPago}</strong>
+              </p>
+            </div>
+          ))}
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem' }}>
-            <button onClick={() => cambiarPagina(-1)} disabled={paginaActual === 1}>Anterior</button>
-            <span>Página {paginaActual} de {totalPaginas}</span>
-            <button onClick={() => cambiarPagina(1)} disabled={paginaActual === totalPaginas}>Siguiente</button>
+          <div className="paginacion">
+            <button onClick={() => cambiarPagina(-1)} disabled={paginaActual === 1}>⏪ Anterior</button>
+            <span style={{ alignSelf: 'center' }}>Página {paginaActual} de {totalPaginas}</span>
+            <button onClick={() => cambiarPagina(1)} disabled={paginaActual === totalPaginas}>Siguiente ⏩</button>
           </div>
         </>
       )}

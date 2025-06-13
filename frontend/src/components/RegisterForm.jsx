@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useUser } from '../context/UserContext';
+import { useNavigate } from 'react-router-dom';
 
 const RegisterForm = ({ onLoginSwitch, onSuccess }) => {
   const { login } = useUser();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     nombre: '',
@@ -16,65 +18,75 @@ const RegisterForm = ({ onLoginSwitch, onSuccess }) => {
     genero: 'M',
   });
 
-  const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-    };
+  useEffect(() => {
+    // Guardar ruta previa si viene del carrito
+    const previousRoute = window.location.pathname;
+    if (previousRoute === "/carrito") {
+      localStorage.setItem("redirigir_despues", "/carrito");
+    }
+  }, []);
 
-    const handleRegister = async (e) => {
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleRegister = async (e) => {
     e.preventDefault();
 
     const { nombre, email, password } = formData;
 
     if (!nombre || !email || !password) {
-        alert('Por favor completa todos los campos');
-        return;
+      alert('Por favor completa todos los campos');
+      return;
     }
 
     try {
-        const response = await fetch('http://localhost:8080/api/clientes/registrar', {
+      const response = await fetch('http://localhost:8080/api/clientes/registrar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...formData, estado: 'activo' })
-        });
+      });
 
-        if (response.ok) {
+      if (response.ok) {
         const nuevoCliente = await response.json();
-        login(nuevoCliente); // Guarda el usuario
-        onSuccess(); // Cierra el modal
+        login(nuevoCliente); // Guarda en contexto
+        const destino = localStorage.getItem("redirigir_despues");
+        localStorage.removeItem("redirigir_despues");
+
+        if (destino === "checkout") {
+          navigate("/", { state: { abrirCarrito: true } });
         } else {
-        alert('Error al registrar. Verifica que el correo no esté en uso.');
+          navigate("/");
         }
+      } else {
+        alert('Error al registrar. Verifica que el correo no esté en uso.');
+      }
     } catch (error) {
-        console.error('Error en registro:', error);
-        alert('Hubo un problema con el servidor.');
+      console.error('Error en registro:', error);
+      alert('Hubo un problema con el servidor.');
     }
-   };
+  };
 
   return (
     <div className="modal-register">
-      <h2>📝 Registro de Nuevo Cliente</h2>
+      <h2>📝 Registro</h2>
       <form onSubmit={handleRegister}>
-        <input name="nombre" placeholder="Nombre" value={formData.nombre} onChange={handleChange} required />
-        <input name="apellido" placeholder="Apellido" value={formData.apellido} onChange={handleChange} required />
-        <input name="email" type="email" placeholder="Correo electrónico" value={formData.email} onChange={handleChange} required />
-        <input name="password" type="password" placeholder="Contraseña" value={formData.password} onChange={handleChange} required />
-        <input name="telefono" placeholder="Teléfono" value={formData.telefono} onChange={handleChange} required />
-        <textarea name="direccion" placeholder="Dirección" value={formData.direccion} onChange={handleChange} required />
-        <input name="dni" placeholder="DNI" value={formData.dni} onChange={handleChange} required />
-        <input name="fecha_nacimiento" type="date" value={formData.fecha_nacimiento} onChange={handleChange} required />
-        <select name="genero" value={formData.genero} onChange={handleChange} required>
+        <input name="nombre" placeholder="Nombre" onChange={handleChange} />
+        <input name="apellido" placeholder="Apellido" onChange={handleChange} />
+        <input name="email" placeholder="Correo" onChange={handleChange} />
+        <input name="password" type="password" placeholder="Contraseña" onChange={handleChange} />
+        <input name="telefono" placeholder="Teléfono" onChange={handleChange} />
+        <input name="direccion" placeholder="Dirección" onChange={handleChange} />
+        <input name="dni" placeholder="DNI" onChange={handleChange} />
+        <input name="fecha_nacimiento" type="date" onChange={handleChange} />
+        <select name="genero" onChange={handleChange}>
           <option value="M">Masculino</option>
           <option value="F">Femenino</option>
-          <option value="Otro">Otro</option>
         </select>
-
-        <button type="submit">Registrarse</button>
+        <button type="submit">Crear Cuenta</button>
       </form>
-
-      <p style={{ marginTop: '1rem' }}>
-        ¿Ya tienes cuenta? <button onClick={onLoginSwitch}>Iniciar Sesión</button>
-      </p>
+      <p>¿Ya tienes una cuenta? <button onClick={onLoginSwitch}>Iniciar Sesión</button></p>
     </div>
   );
 };

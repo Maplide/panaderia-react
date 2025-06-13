@@ -16,9 +16,12 @@ import Cart from './Cart';
 import CheckoutForm from './CheckoutForm';
 import ProductCard from './ProductCard';
 import HistorialCompras from './HistorialCompras';
+import CompraExitosaModal from './CompraExitosaModal';
 import { useUser } from '../context/UserContext';
 
 import { useCart } from '../context/CartContext';
+
+import { useLocation } from 'react-router-dom'
 
 const Home = () => {
 
@@ -30,10 +33,39 @@ const Home = () => {
   const { cart } = useCart();
   const [redirectAfterLogin, setRedirectAfterLogin] = useState(null);
   const [flujoPendiente, setFlujoPendiente] = useState(null);
+  const [resumenCompra, setResumenCompra] = useState(null);
+  const [mostrarModalCompra, setMostrarModalCompra] = useState(false);
+  const [productosPorCategoria, setProductosPorCategoria] = useState({});
 
   // 🆕 Inicializar animaciones AOS al cargar el componente
   useEffect(() => {
     AOS.init({ duration: 1000, once: true });
+  }, []);
+
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.abrirCarrito) {
+      setModalType('cart');
+      setModalOpen(true);
+    }
+  }, [location.state]);
+
+  useEffect(() => {
+    const cargarProductos = async () => {
+      const categorias = [1, 2, 3, 4, 5]; // Reemplaza por los IDs reales
+      const data = {};
+
+      for (const id of categorias) {
+        const res = await fetch(`http://localhost:8080/api/productos/categoria/${id}`);
+        const productos = await res.json();
+        data[id] = productos;
+      }
+
+      setProductosPorCategoria(data);
+    };
+
+    cargarProductos();
   }, []);
 
   const renderModalContent = () => {
@@ -77,10 +109,10 @@ const Home = () => {
         return (
           <CheckoutForm
             onBack={() => setModalType('cart')}
-            onNext={() => {
-              alert('¡Pedido confirmado! Gracias por tu compra 🥐');
-              clearCart(); // Vacía el carrito
-              setModalOpen(false); // Cierra el modal
+            onNext={(resumen) => {
+              setResumenCompra(resumen);     // <-- Guardas datos en el estado
+              setMostrarModalCompra(true);   // <-- Activas el modal personalizado
+              setModalType(null);            // <-- Cierra la vista de Checkout
             }}
           />
         );
@@ -176,6 +208,17 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {Object.entries(productosPorCategoria).map(([categoriaId, productos]) => (
+        <div key={categoriaId} className="categoria-bloque">
+          <h3>Categoría {categoriaId}</h3>
+          <div className="productos-grid">
+            {productos.map((producto) => (
+              <ProductCard key={producto.id} producto={producto} />
+            ))}
+          </div>
+        </div>
+      ))}
 
       {/* Sobre nosotros */}
       <section className="sobre-nosotros" data-aos="fade-up">
@@ -340,6 +383,18 @@ const Home = () => {
           <span className="cart-badge">{cart.length}</span>
         )}
       </div>
+
+      {mostrarModalCompra && resumenCompra && (
+        <div className="auth-modal" style={{ display: 'flex' }}>
+          <div className="modal-content modal-exitosa">
+            <CompraExitosaModal
+              visible={true}
+              onClose={() => setMostrarModalCompra(false)}
+              datos={resumenCompra}
+            />
+          </div>
+        </div>
+      )}
     </>
   );
 };
