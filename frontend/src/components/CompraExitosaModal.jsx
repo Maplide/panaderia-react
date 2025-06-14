@@ -1,4 +1,5 @@
 import React from 'react';
+import './Home.css';
 
 const CompraExitosaModal = ({ visible, onClose, datos }) => {
   if (!visible || !datos) return null;
@@ -6,7 +7,7 @@ const CompraExitosaModal = ({ visible, onClose, datos }) => {
   const { nombre, direccion, entrega, pago, total } = datos;
 
   return (
-    <div className="modal-exitosa">
+    <>
       <h2>✅ ¡Compra Realizada!</h2>
       <div className="modal-detalle">
         <p><strong>👤 Cliente:</strong> {nombre}</p>
@@ -18,7 +19,7 @@ const CompraExitosaModal = ({ visible, onClose, datos }) => {
         <p className="total-final"><strong>💰 Total:</strong> S/ {total.toFixed(2)}</p>
       </div>
       <button className="btn-primario" onClick={onClose}>Aceptar</button>
-    </div>
+    </>
   );
 };
 

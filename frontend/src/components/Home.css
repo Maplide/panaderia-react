@@ -277,6 +277,38 @@ nav a.active {
     display: inline-block;
 }
 
+.productos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  margin: 40px 0;
+}
+
+.filtros-categorias {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin: 40px 0 20px;
+}
+
+.btn-categoria {
+  background-color: #fff;
+  color: var(--color-primario);
+  border: 2px solid var(--color-primario);
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-categoria.activo,
+.btn-categoria:hover {
+  background-color: var(--color-primario);
+  color: #fff;
+}
+
 /* Sección Sobre Nosotros */
 .sobre-nosotros {
     padding: 80px 0;

@@ -35,7 +35,7 @@ const Cart = ({ onNext, onClose, openLoginModal }) => {
         <ul className="cart-list">
           {cart.map((item) => (
             <li key={item.id} className="cart-item">
-              <img src={item.imagen_url} alt={item.nombre} className="cart-img" />
+              <img src={item.imagenUrl || item.imagen_url} alt={item.nombre} className="cart-img" />
               <div className="cart-info">
                 <h4>{item.nombre}</h4>
                 <p>S/ {item.precio.toFixed(2)} x {item.cantidad}</p>

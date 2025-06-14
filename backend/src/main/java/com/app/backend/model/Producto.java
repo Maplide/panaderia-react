@@ -3,6 +3,8 @@ package com.app.backend.model;
 import jakarta.persistence.*;
 import com.app.backend.model.Categoria;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Entity
 @Table(name = "productos")
 public class Producto {
@@ -32,6 +34,7 @@ public class Producto {
             columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private String fechaCreacion;
 
+    @JsonIgnoreProperties("categoria")
     @ManyToOne
     @JoinColumn(name = "categoria_id")
     private Categoria categoria;

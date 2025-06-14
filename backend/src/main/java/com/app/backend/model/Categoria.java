@@ -6,6 +6,8 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Entity
 @Table(name = "categorias")
 @Getter
@@ -46,7 +48,7 @@ public class Categoria {
     private String observaciones;
 
     public enum TipoCategoria {
-        pan, pastel, galleta, otros
+        pan, torta, galleta, queque, postre, pastel
     }
 
     public enum Estado {

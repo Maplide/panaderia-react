@@ -4,6 +4,8 @@ import com.app.backend.model.Producto;
 import com.app.backend.repository.ProductoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
 
@@ -30,7 +32,8 @@ public class ProductoController {
     }
 
     @GetMapping("/categoria/{categoriaId}")
-    public List<Producto> productosPorCategoria(@PathVariable Long categoriaId) {
-        return productoRepository.findByCategoria_Id(categoriaId);
+    public ResponseEntity<List<Producto>> productosPorCategoria(@PathVariable Long categoriaId) {
+        List<Producto> productos = productoRepository.findByCategoria_Id(categoriaId);
+        return ResponseEntity.ok(productos);
     }
 }

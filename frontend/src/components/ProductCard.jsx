@@ -5,8 +5,8 @@ const ProductCard = ({ producto }) => {
   const { addToCart } = useCart();
 
   return (
-    <div className="product-card" data-aos="zoom-in">
-      <img src={producto.imagen_url} alt={producto.nombre} className="product-img" />
+    <div className="product-card destacado-item" data-aos="zoom-in">
+      <img src={producto.imagenUrl} alt={producto.nombre} className="product-img" />
       <div className="product-info">
         <h3>{producto.nombre}</h3>
         <p className="product-price">S/ {producto.precio.toFixed(2)}</p>

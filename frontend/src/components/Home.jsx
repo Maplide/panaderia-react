@@ -59,6 +59,7 @@ const Home = () => {
       for (const id of categorias) {
         const res = await fetch(`http://localhost:8080/api/productos/categoria/${id}`);
         const productos = await res.json();
+        console.log("Categoría:", id, "→ productos:", productos); // 👈 AÑADE ESTO
         data[id] = productos;
       }
 
@@ -122,11 +123,21 @@ const Home = () => {
   };
 
   const productos = [
-    { id: 1, nombre: "Pan Francés", precio: 2.00, imagen_url: "/imagenes/pan-frances.png" },
-    { id: 2, nombre: "Empanadas de Pollo", precio: 5.00, imagen_url: "/imagenes/empanadas-de-pollo.png" },
-    { id: 3, nombre: "Pastel de Chocolate", precio: 20.00, imagen_url: "/imagenes/pastel-de-chocolate.png" },
-    { id: 4, nombre: "Pay de manzana", precio: 10.00, imagen_url: "/imagenes/pay-de-manzana.png" },
-    { id: 5, nombre: "Bizcocho de vainilla", precio: 12.00, imagen_url: "/imagenes/bizcochos-de-vainilla.png" }
+    { id: 1, nombre: "Pan Francés", precio: 2.00, imagenUrl: "/imagenes/pan-frances.png" },
+    { id: 2, nombre: "Empanadas de Pollo", precio: 5.00, imagenUrl: "/imagenes/empanadas-de-pollo.png" },
+    { id: 3, nombre: "Pastel de Chocolate", precio: 20.00, imagenUrl: "/imagenes/pastel-de-chocolate.png" },
+    { id: 4, nombre: "Pay de manzana", precio: 10.00, imagenUrl: "/imagenes/pay-de-manzana.png" },
+    { id: 5, nombre: "Bizcocho de vainilla", precio: 12.00, imagenUrl: "/imagenes/bizcochos-de-vainilla.png" }
+  ];
+
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState(0);
+  const categorias = [
+    { id: 0, nombre: 'Todo' }, // Mostrar todos
+    { id: 1, nombre: 'Pan' },
+    { id: 2, nombre: 'Torta' },
+    { id: 3, nombre: 'Galleta' },
+    { id: 4, nombre: 'Queque' },
+    { id: 5, nombre: 'Postre' }
   ];
 
   return (
@@ -197,7 +208,7 @@ const Home = () => {
         </div>
       </section>
       
-      {/* Productos destacados */}
+      {/* Productos destacados estáticos */}
       <section id="productos-destacados" className="destacados" data-aos="fade-up">
         <div className="container">
           <h2 className="titulo-productos">Nuestros Productos Destacados</h2>
@@ -209,16 +220,49 @@ const Home = () => {
         </div>
       </section>
 
-      {Object.entries(productosPorCategoria).map(([categoriaId, productos]) => (
-        <div key={categoriaId} className="categoria-bloque">
-          <h3>Categoría {categoriaId}</h3>
-          <div className="productos-grid">
-            {productos.map((producto) => (
-              <ProductCard key={producto.id} producto={producto} />
-            ))}
-          </div>
+      {/* Filtros dinámicos por categoría */}
+      <div className="filtros-categorias">
+        {categorias.map((cat) => (
+          <button
+            key={cat.id}
+            className={`btn-categoria ${categoriaSeleccionada === cat.id ? 'activo' : ''}`}
+            onClick={() => setCategoriaSeleccionada(cat.id)}
+          >
+            {cat.nombre}
+          </button>
+        ))}
+      </div>
+
+      {/* Productos filtrados dinámicamente */}
+      <section className="productos-por-categoria" data-aos="fade-up">
+        <div className="container">
+          <h2 className="titulo-productos">
+            {categoriaSeleccionada === 0 ? 'Todos los Productos' : `Categoría: ${categorias.find(c => c.id === categoriaSeleccionada)?.nombre}`}
+          </h2>
+
+          {categoriaSeleccionada === 0 ? (
+            Object.entries(productosPorCategoria).map(([categoriaId, productos]) =>
+              Array.isArray(productos) && productos.length > 0 ? (
+                <div key={categoriaId} className="productos-grid">
+                  {productos.map((producto) => (
+                    <ProductCard key={producto.id} producto={producto} />
+                  ))}
+                </div>
+              ) : null
+            )
+          ) : Array.isArray(productosPorCategoria[categoriaSeleccionada]) ? (
+            <div className="productos-grid">
+              {productosPorCategoria[categoriaSeleccionada].map((producto) => (
+                <ProductCard key={producto.id} producto={producto} />
+              ))}
+            </div>
+          ) : (
+            <p style={{ textAlign: 'center', margin: '2rem 0', color: 'red' }}>
+              No se encontraron productos para esta categoría.
+            </p>
+          )}
         </div>
-      ))}
+      </section>
 
       {/* Sobre nosotros */}
       <section className="sobre-nosotros" data-aos="fade-up">
@@ -355,7 +399,7 @@ const Home = () => {
         </div>
       </footer>
 
-      {modalOpen && (
+      {modalOpen && modalType && (
         <div className="auth-modal" style={{ display: 'flex' }}>
           <div className="modal-content">
             <span className="close-modal" onClick={() => setModalOpen(false)}>&times;</span>
