@@ -1550,3 +1550,7 @@ nav a.active {
 .modal-exitosa button:hover {
   background-color: #218838;
 }
+
+.modal-content {
+  background-color: white !important;
+}
