@@ -1,8 +1,7 @@
-// src/components/SesionChecker.js
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Modal, Button } from 'react-bootstrap';
-import { useUser } from '../context/UserContext'; // ⬅️ Importa esto
+import { useUser } from '../context/UserContext';
 
 
 function SesionChecker() {
@@ -19,7 +18,7 @@ function SesionChecker() {
           if (!res.ok) throw new Error("Sesión expirada");
         })
         .catch(() => setMostrarModal(true));
-    }, 30000); // cada 30 segundos
+    }, 600000);
 
     return () => clearInterval(intervalo);
   }, []);
@@ -29,7 +28,7 @@ function SesionChecker() {
         method: "POST",
         credentials: "include"
     }).finally(() => {
-        logout(); // ⬅️ Esto actualiza el estado global
+        logout(); // Esto actualiza el estado global
         setMostrarModal(false);
         navigate("/"); // redirige al home
     });

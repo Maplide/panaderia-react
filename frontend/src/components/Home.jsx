@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './Home.css';
 
-// 🆕 Librerías agregadas para íconos y animaciones
+// Librerías agregadas para íconos y animaciones
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import {
@@ -28,7 +28,7 @@ const Home = () => {
   const { user, logout } = useUser();
   const [modalOpen, setModalOpen] = useState(false);
   const { clearCart } = useCart();
-  const [modalType, setModalType] = useState(null); // puede ser 'login', 'register', 'cart', 'pedido'
+  const [modalType, setModalType] = useState(null);
   const [mostrarHistorial, setMostrarHistorial] = useState(false);
   const { cart } = useCart();
   const [redirectAfterLogin, setRedirectAfterLogin] = useState(null);
@@ -53,13 +53,13 @@ const Home = () => {
 
   useEffect(() => {
     const cargarProductos = async () => {
-      const categorias = [1, 2, 3, 4, 5]; // Reemplaza por los IDs reales
+      const categorias = [1, 2, 3, 4, 5];
       const data = {};
 
       for (const id of categorias) {
         const res = await fetch(`http://localhost:8080/api/productos/categoria/${id}`);
         const productos = await res.json();
-        console.log("Categoría:", id, "→ productos:", productos); // 👈 AÑADE ESTO
+        console.log("Categoría:", id, "→ productos:", productos);
         data[id] = productos;
       }
 
@@ -100,7 +100,7 @@ const Home = () => {
             onClose={() => setModalOpen(false)}
             onNext={() => setModalType('checkout')}
             openLoginModal={(flujo = 'cart') => {
-              setFlujoPendiente(flujo);  // 👈 ahora acepta "cart" o "checkout"
+              setFlujoPendiente(flujo);
               setModalType('login');
               setModalOpen(true);
             }}
@@ -132,7 +132,7 @@ const Home = () => {
 
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState(0);
   const categorias = [
-    { id: 0, nombre: 'Todo' }, // Mostrar todos
+    { id: 0, nombre: 'Todo' },
     { id: 1, nombre: 'Pan' },
     { id: 2, nombre: 'Torta' },
     { id: 3, nombre: 'Galleta' },

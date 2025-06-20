@@ -27,10 +27,10 @@ public class ClienteController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("El correo ya está registrado.");
         }
 
-        cliente.setPassword(passwordEncoder.encode(cliente.getPassword())); // 👈 hashear
+        cliente.setPassword(passwordEncoder.encode(cliente.getPassword())); // 🔐 Se encripta contraseña
         cliente.setEstado("activo");
-        Cliente guardado = clienteRepository.save(cliente);
-        return ResponseEntity.ok(guardado);
+        Cliente guardado = clienteRepository.save(cliente); // 💾 Se guarda en BD
+        return ResponseEntity.ok(guardado); // ✅ Respuesta OK
     }
 
     @PostMapping("/login")
@@ -41,9 +41,7 @@ public class ClienteController {
             Cliente clienteBD = encontrado.get();
 
             if (passwordEncoder.matches(cliente.getPassword(), clienteBD.getPassword())) {
-                // Guardar en sesión
                 session.setAttribute("clienteLogueado", clienteBD);
-
                 return ResponseEntity.ok(clienteBD); // Login exitoso
             }
         }

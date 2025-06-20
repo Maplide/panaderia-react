@@ -21,7 +21,7 @@ const Cart = ({ onNext, onClose, openLoginModal }) => {
         navigate("/registro");
       }
     } else {
-      onNext(); // ✅ Avanzar al formulario de entrega
+      onNext(); // Avanzar al formulario de entrega
     }
   };
 
